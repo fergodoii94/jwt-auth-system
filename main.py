@@ -1,32 +1,50 @@
-import jwt
-import datetime
+"""Minimal JWT authentication example with safer configuration and errors."""
+
+from __future__ import annotations
+
+import os
+from datetime import datetime, timedelta, timezone
 from functools import wraps
+from typing import Any, Callable, TypeVar, cast
 
-SECRET_KEY = "madrid_tech_secret"
+import jwt
 
-def generate_token(user_id):
-    payload = {
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
-        "iat": datetime.datetime.utcnow(),
-        "sub": user_id
-    }
-    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+F = TypeVar("F", bound=Callable[..., Any])
 
-def token_required(f):
-    @wraps(f)
-    def decorated(token, *args, **kwargs):
+
+def create_access_token(subject: str, expires_minutes: int = 30) -> str:
+    secret = os.getenv("JWT_SECRET_KEY")
+    if not secret:
+        raise RuntimeError("JWT_SECRET_KEY environment variable is required")
+    now = datetime.now(timezone.utc)
+    payload = {"sub": subject, "iat": now, "exp": now + timedelta(minutes=expires_minutes)}
+    return jwt.encode(payload, secret, algorithm="HS256")
+
+
+def decode_access_token(token: str) -> dict[str, Any]:
+    secret = os.getenv("JWT_SECRET_KEY")
+    if not secret:
+        raise RuntimeError("JWT_SECRET_KEY environment variable is required")
+    return cast(dict[str, Any], jwt.decode(token, secret, algorithms=["HS256"]))
+
+
+def require_token(function: F) -> F:
+    @wraps(function)
+    def wrapper(token: str, *args: Any, **kwargs: Any) -> Any:
         try:
-            jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            return f(token, *args, **kwargs)
-        except:
-            return "Invalid or Expired Token"
-    return decorated
+            claims = decode_access_token(token.removeprefix("Bearer ").strip())
+        except (jwt.InvalidTokenError, RuntimeError) as exc:
+            raise PermissionError("Invalid or expired token") from exc
+        return function(claims, *args, **kwargs)
 
-@token_required
-def get_protected_data(token):
-    return "Access Granted: Welcome to the secure area!"
+    return cast(F, wrapper)
 
-# Test
-token = generate_token("fergodoii94")
-print(f"Token: {token}")
-print(get_protected_data(token))
+
+@require_token
+def protected_resource(claims: dict[str, Any]) -> str:
+    return f"Authenticated subject: {claims['sub']}"
+
+
+if __name__ == "__main__":
+    print("JWT authentication example")
+    print("Set JWT_SECRET_KEY before creating or decoding tokens.")
