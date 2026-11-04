@@ -38,11 +38,44 @@ def test_decode_rejects_expired_token(monkeypatch):
     monkeypatch.setenv("JWT_SECRET_KEY", secret)
     now = datetime.now(timezone.utc)
     token = jwt.encode(
-        {"sub": "user-123", "iat": now - timedelta(minutes=2), "exp": now - timedelta(minutes=1)},
+        {
+            "sub": "user-123",
+            "iat": now - timedelta(minutes=2),
+            "exp": now - timedelta(minutes=1),
+        },
         secret,
         algorithm="HS256",
     )
     with pytest.raises(jwt.ExpiredSignatureError):
+        decode_access_token(token)
+
+
+def test_decode_rejects_invalid_signature(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET_KEY", "x" * 48)
+    token = jwt.encode(
+        {
+            "sub": "user-123",
+            "iat": datetime.now(timezone.utc),
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
+        },
+        "y" * 48,
+        algorithm="HS256",
+    )
+
+    with pytest.raises(jwt.InvalidSignatureError):
+        decode_access_token(token)
+
+
+def test_decode_requires_standard_claims(monkeypatch):
+    secret = "x" * 48
+    monkeypatch.setenv("JWT_SECRET_KEY", secret)
+    token = jwt.encode(
+        {"sub": "user-123", "iat": datetime.now(timezone.utc)},
+        secret,
+        algorithm="HS256",
+    )
+
+    with pytest.raises(jwt.MissingRequiredClaimError):
         decode_access_token(token)
 
 

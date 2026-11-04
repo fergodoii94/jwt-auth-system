@@ -9,7 +9,7 @@ A compact Python example demonstrating JSON Web Token creation, verification and
 - Reads the signing key from `JWT_SECRET_KEY` and requires at least 32 bytes.
 - Verifies the signature and requires `sub`, `iat` and `exp` claims.
 - Provides a `require_token` decorator that passes verified claims to a protected function.
-- Includes pytest coverage for token creation, expiration, key validation and protected access.
+- Includes pytest coverage for token creation, expiration, invalid signatures, required claims, key validation and protected access.
 
 ## Run locally
 
@@ -35,6 +35,15 @@ print(protected_resource(token=f"Bearer {token}"))
 ```
 
 The protected function receives verified claims after the decorator validates the bearer token.
+
+## Quality checks
+
+```bash
+ruff check main.py tests
+pytest -q
+```
+
+GitHub Actions runs these checks on pushes and pull requests to `main`. Check the Actions tab for the result associated with each commit.
 
 ## Security scope and limitations
 
