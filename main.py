@@ -1,4 +1,4 @@
-"""Minimal JWT authentication example with safer configuration and errors."""
+"""Minimal JWT example with explicit key and claim validation."""
 
 from __future__ import annotations
 
@@ -12,20 +12,41 @@ import jwt
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-def create_access_token(subject: str, expires_minutes: int = 30) -> str:
+def _get_secret() -> str:
     secret = os.getenv("JWT_SECRET_KEY")
     if not secret:
         raise RuntimeError("JWT_SECRET_KEY environment variable is required")
+    if len(secret.encode("utf-8")) < 32:
+        raise RuntimeError("JWT_SECRET_KEY must contain at least 32 bytes")
+    return secret
+
+
+def create_access_token(subject: str, expires_minutes: int = 30) -> str:
+    normalized_subject = subject.strip()
+    if not normalized_subject:
+        raise ValueError("Token subject cannot be empty")
+    if expires_minutes <= 0:
+        raise ValueError("Token expiration must be greater than zero")
+
     now = datetime.now(timezone.utc)
-    payload = {"sub": subject, "iat": now, "exp": now + timedelta(minutes=expires_minutes)}
-    return jwt.encode(payload, secret, algorithm="HS256")
+    payload = {
+        "sub": normalized_subject,
+        "iat": now,
+        "exp": now + timedelta(minutes=expires_minutes),
+    }
+    return jwt.encode(payload, _get_secret(), algorithm="HS256")
 
 
 def decode_access_token(token: str) -> dict[str, Any]:
-    secret = os.getenv("JWT_SECRET_KEY")
-    if not secret:
-        raise RuntimeError("JWT_SECRET_KEY environment variable is required")
-    return cast(dict[str, Any], jwt.decode(token, secret, algorithms=["HS256"]))
+    claims = jwt.decode(
+        token,
+        _get_secret(),
+        algorithms=["HS256"],
+        options={"require": ["sub", "iat", "exp"]},
+    )
+    if not isinstance(claims.get("sub"), str) or not claims["sub"].strip():
+        raise jwt.InvalidTokenError("Token subject is missing or empty")
+    return cast(dict[str, Any], claims)
 
 
 def require_token(function: F) -> F:
@@ -47,4 +68,4 @@ def protected_resource(claims: dict[str, Any]) -> str:
 
 if __name__ == "__main__":
     print("JWT authentication example")
-    print("Set JWT_SECRET_KEY before creating or decoding tokens.")
+    print("Set a random JWT_SECRET_KEY of at least 32 bytes before use.")
