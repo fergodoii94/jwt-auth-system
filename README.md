@@ -2,24 +2,25 @@
 
 A compact Python example demonstrating JSON Web Token creation, verification and decorator-based protection of a Python function.
 
-## Current implementation
+## Implemented features
 
-- Creates HS256 access tokens with a subject, issued-at time and expiration.
-- Verifies token signatures and expiration with PyJWT.
-- Reads the signing key from the `JWT_SECRET_KEY` environment variable.
+- Creates HS256 access tokens with subject, issued-at and expiration claims.
+- Requires a non-empty subject and a positive token lifetime.
+- Reads the signing key from `JWT_SECRET_KEY` and requires at least 32 bytes.
+- Verifies the signature and requires `sub`, `iat` and `exp` claims.
 - Provides a `require_token` decorator that passes verified claims to a protected function.
-- Raises a permission error for invalid or expired tokens.
+- Includes pytest coverage for token creation, expiration, key validation and protected access.
 
-## Requirements
+## Run locally
 
-Python 3.10+ and PyJWT.
+Python 3.10+.
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install PyJWT
+pip install -r requirements-dev.txt
 export JWT_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
-python main.py
+pytest -q
 ```
 
 Do not commit the generated key or use a development key in production.
@@ -30,14 +31,13 @@ Do not commit the generated key or use a development key in production.
 from main import create_access_token, protected_resource
 
 token = create_access_token("user-123")
-print(protected_resource(token=token))
+print(protected_resource(token=f"Bearer {token}"))
 ```
 
 The protected function receives verified claims after the decorator validates the bearer token.
 
 ## Security scope and limitations
 
-This is an educational token-handling example, not a complete authentication service. It does not implement user registration, password hashing, refresh-token rotation/revocation, key rotation, issuer/audience validation, role-based authorization, HTTP middleware or a FastAPI dependency. The decorator expects a token argument directly and is not an HTTP bearer-auth integration.
+This is an educational token-handling example, not a complete authentication service. It does not implement user registration, password hashing, refresh-token rotation/revocation, key rotation, issuer/audience validation, role-based authorization, HTTP middleware or a FastAPI bearer-auth integration. The decorator expects a token argument directly.
 
-Before production use, add a managed secret/key lifecycle, strict token claim validation, tests for invalid/expired tokens, and framework-level authentication/authorization.
-
+Before production use, add a managed secret/key lifecycle, strict issuer/audience policy, framework-level authentication/authorization and a broader security test suite.
