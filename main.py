@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime, timedelta, timezone
+from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 from functools import wraps
-from typing import Any, Callable, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 import jwt
 
@@ -28,7 +29,7 @@ def create_access_token(subject: str, expires_minutes: int = 30) -> str:
     if expires_minutes <= 0:
         raise ValueError("Token expiration must be greater than zero")
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     payload = {
         "sub": normalized_subject,
         "iat": now,

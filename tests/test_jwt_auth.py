@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import jwt
 import pytest
@@ -36,7 +36,7 @@ def test_decode_rejects_short_secret(monkeypatch):
 def test_decode_rejects_expired_token(monkeypatch):
     secret = "x" * 48
     monkeypatch.setenv("JWT_SECRET_KEY", secret)
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     token = jwt.encode(
         {
             "sub": "user-123",
@@ -55,8 +55,8 @@ def test_decode_rejects_invalid_signature(monkeypatch):
     token = jwt.encode(
         {
             "sub": "user-123",
-            "iat": datetime.now(timezone.utc),
-            "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
+            "iat": datetime.now(UTC),
+            "exp": datetime.now(UTC) + timedelta(minutes=5),
         },
         "y" * 48,
         algorithm="HS256",
@@ -70,7 +70,7 @@ def test_decode_requires_standard_claims(monkeypatch):
     secret = "x" * 48
     monkeypatch.setenv("JWT_SECRET_KEY", secret)
     token = jwt.encode(
-        {"sub": "user-123", "iat": datetime.now(timezone.utc)},
+        {"sub": "user-123", "iat": datetime.now(UTC)},
         secret,
         algorithm="HS256",
     )

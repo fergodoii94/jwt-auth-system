@@ -13,7 +13,7 @@ A compact Python example demonstrating JSON Web Token creation, verification and
 
 ## Run locally
 
-Python 3.10+.
+Python 3.11+.
 
 ```bash
 python -m venv .venv
