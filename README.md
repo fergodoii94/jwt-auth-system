@@ -1,4 +1,14 @@
+<div align="center">
+
 # JWT Authentication Example
+
+**A focused Python example of JSON Web Token creation and verification.**
+
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![JWT](https://img.shields.io/badge/Auth-JWT-000000?logo=jsonwebtokens&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-Pytest-0A9EDC?logo=pytest&logoColor=white)
+
+</div>
 
 A compact Python example demonstrating JSON Web Token creation, verification and decorator-based protection of a Python function.
 
@@ -11,9 +21,14 @@ A compact Python example demonstrating JSON Web Token creation, verification and
 - Provides a `require_token` decorator that passes verified claims to a protected function.
 - Includes pytest coverage for token creation, expiration, invalid signatures, required claims, key validation and protected access.
 
-## Run locally
+## Tech stack
 
-Python 3.11+.
+- Python 3.11+
+- JSON Web Tokens (HS256)
+- Pytest
+- Ruff
+
+## Run locally
 
 ```bash
 python -m venv .venv
@@ -47,6 +62,14 @@ GitHub Actions runs these checks on pushes and pull requests to `main`. Check th
 
 ## Security scope and limitations
 
-This is an educational token-handling example, not a complete authentication service. It does not implement user registration, password hashing, refresh-token rotation/revocation, key rotation, issuer/audience validation, role-based authorization, HTTP middleware or a FastAPI bearer-auth integration. The decorator expects a token argument directly.
+> **Portfolio scope:** This is an educational token-handling example, not a complete authentication service.
+
+It does not implement user registration, password hashing, refresh-token rotation/revocation, key rotation, issuer/audience validation, role-based authorization, HTTP middleware or a FastAPI bearer-auth integration. The decorator expects a token argument directly.
 
 Before production use, add a managed secret/key lifecycle, strict issuer/audience policy, framework-level authentication/authorization and a broader security test suite.
+
+---
+
+<div align="center">
+  <sub>Part of my Python backend engineering portfolio.</sub>
+</div>
