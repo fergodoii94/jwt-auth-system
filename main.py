@@ -1,5 +1,3 @@
-"""Minimal JWT example with explicit key and claim validation."""
-
 from __future__ import annotations
 
 import os
@@ -53,8 +51,12 @@ def decode_access_token(token: str) -> dict[str, Any]:
 def require_token(function: F) -> F:
     @wraps(function)
     def wrapper(token: str, *args: Any, **kwargs: Any) -> Any:
+        scheme, separator, credentials = token.strip().partition(" ")
+        if not separator or scheme.lower() != "bearer" or not credentials.strip():
+            raise PermissionError("Authorization must use the Bearer scheme")
+
         try:
-            claims = decode_access_token(token.removeprefix("Bearer ").strip())
+            claims = decode_access_token(credentials.strip())
         except (jwt.InvalidTokenError, RuntimeError) as exc:
             raise PermissionError("Invalid or expired token") from exc
         return function(claims, *args, **kwargs)
