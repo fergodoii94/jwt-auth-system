@@ -4,6 +4,7 @@
 
 **A focused Python example of JSON Web Token creation and verification.**
 
+[![CI](https://github.com/fergodoii94/jwt-auth-system/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/fergodoii94/jwt-auth-system/actions/workflows/ci-cd.yml)
 ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
 ![JWT](https://img.shields.io/badge/Auth-JWT-000000?logo=jsonwebtokens&logoColor=white)
 ![Tests](https://img.shields.io/badge/Tests-Pytest-0A9EDC?logo=pytest&logoColor=white)
