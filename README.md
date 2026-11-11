@@ -22,6 +22,13 @@ A compact Python example demonstrating JSON Web Token creation, verification and
 - Provides a `require_token` decorator that passes verified claims to a protected function.
 - Includes pytest coverage for token creation, expiration, invalid signatures, required claims, key validation and protected access.
 
+## Security design choices
+
+- **Pinned algorithm:** the decoder accepts only HS256 rather than trusting the token header to choose an algorithm.
+- **Required claims:** tokens must contain `sub`, `iat` and `exp`; expired tokens and invalid signatures are rejected.
+- **Managed secret input:** `JWT_SECRET_KEY` is read from the environment and must contain at least 32 bytes. There is no hard-coded fallback.
+- **Small integration surface:** `require_token` demonstrates function-level protection and passes verified claims to the wrapped function. It is not a FastAPI dependency or a complete user-authentication system.
+
 ## Tech stack
 
 - Python 3.11+
