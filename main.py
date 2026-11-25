@@ -13,8 +13,11 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 def _get_secret() -> str:
     secret = os.getenv("JWT_SECRET_KEY")
-    if not secret:
+    if secret is None:
         raise RuntimeError("JWT_SECRET_KEY environment variable is required")
+    secret = secret.strip()
+    if not secret:
+        raise RuntimeError("JWT_SECRET_KEY must not be blank")
     if len(secret.encode("utf-8")) < 32:
         raise RuntimeError("JWT_SECRET_KEY must contain at least 32 bytes")
     return secret
